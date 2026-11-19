@@ -1,0 +1,9 @@
+{
+  "$schema": "../node_modules/@changesets/config/schema.json",
+  "changelog": ["@changesets/changelog-github", { "repo": "cheesebuhrger/flxra" }],
+  "commit": false,
+  "access": "public",
+  "baseBranch": "main",
+  "fixed": [["@flxra/tokens", "@flxra/ui"]],
+  "privatePackages": { "version": false, "tag": false }
+}

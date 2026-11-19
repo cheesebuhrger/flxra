@@ -14,9 +14,13 @@
     "dev": "turbo run dev dev:types --filter=docs...",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "test:consumer": "node scripts/test-consumer.mjs"
+    "test:consumer": "node scripts/test-consumer.mjs",
+    "changeset": "changeset",
+    "release": "turbo run build --filter=./packages/* && changeset publish"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "1.0.1",
+    "@changesets/cli": "3.0.3",
     "turbo": "2.11.10",
     "typescript": "5.9.3"
   }
