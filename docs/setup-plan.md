@@ -269,3 +269,18 @@ Sound with changes, all applied above:
 - an explicit Vercel build command, publint/attw on the tarballs in CI, and `mdx-components.tsx`.
 
 **Vite consumer addition (Fable, 2026-11-19):** sound with changes, verified by packing the spike into tarballs and installing them in a fresh Vite 8.3.5 app. Applied: the TypeScript and React types in the install list, a single-React `npm ls` check, the committed tsconfig (`vite/client` types, `skipLibCheck: false`), "no warning" instead of "warning acceptable", the dev pre-bundle fetch, and the `ssr-check.mjs` details. A headless browser waits for step 6's visual tests.
+
+## Implementation notes (2026-11-19)
+
+What changed from the plan while building commits 1–6, each verified:
+- **Fixed versioning** (`"fixed": [["@flxra/tokens", "@flxra/ui"]]`). Simulated with `changeset version`: without it, a breaking tokens release (`0.2.0`) gave `@flxra/ui` only a patch (`0.1.1`) while moving its peer to `^0.2.0`, so `^0.1.0` users would auto-update into a peer conflict. With it, both packages always share one version.
+- **`changesets/action` v2** (`publish-script` instead of `publish`). All actions are pinned to commit SHAs. `create-github-app-token` v3 takes `client-id`, read from the repo variable `RELEASE_APP_CLIENT_ID`, with the key in the secret `RELEASE_APP_PRIVATE_KEY`.
+- **The release job is skipped until `RELEASE_APP_CLIENT_ID` exists.** So the order after pushing is: manual `0.1.0` publish, trusted publishers, *then* the GitHub App. Otherwise the first push to `main` would try to publish `0.1.0` through OIDC before a trusted publisher exists.
+- **CI skips `changeset status` on the `changeset-release/main` branch** (the Version Packages PR consumes the changesets).
+- **Dev:** `npm run dev` runs `turbo run dev dev:types --filter=docs...`. `@flxra/ui`'s watchers depend on its own `build` (in `packages/ui/turbo.json`), so they never race the initial clean build. `emptyOutDir: false`, with the build script clearing `dist` itself. `PORT` passes through to dev. A component edit reached the running docs in about 1 second, so the `resolveAlias` fallback isn't needed.
+- **`typecheck` depends on `^build`:** the docs typecheck needs `@flxra/ui`'s declarations on a fresh clone.
+- **Test consumers:**
+  - publint runs in each package folder (it packs itself), and attw runs on the `@flxra/ui` tarball with `--exclude-entrypoints styles.css`. Pinned: `publint@0.3.25`, `@arethetypeswrong/cli@0.18.5`.
+  - The Next example uses Next's default `skipLibCheck: true`: with `false`, Next's own `.d.ts` files fail. The Vite example keeps `false`, so Flxra's declarations are still strictly checked.
+  - Negative test: removing `"use client"` from `Disclosure` fails the Next build with `useState is not a function`.
+- **Local tooling:** `/usr/local/bin/git` on this Mac is 2.15 (2017), and Changesets fails with it. `/usr/bin/git` (2.54) works. CI is unaffected.
