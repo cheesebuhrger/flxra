@@ -3,15 +3,34 @@
   "ui": "stream",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        ".next/**",
+        "!.next/cache/**"
+      ]
     },
     "dev": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
+      "persistent": true,
+      "cache": false,
+      "passThroughEnv": [
+        "PORT"
+      ]
+    },
+    "dev:types": {
       "persistent": true,
       "cache": false
     },
     "lint": {},
-    "typecheck": {}
+    "typecheck": {
+      "dependsOn": [
+        "^build"
+      ]
+    }
   }
 }

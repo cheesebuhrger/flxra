@@ -1,0 +1,26 @@
+import { Disclosure } from "@flxra/ui";
+
+export const metadata = { title: "Disclosure" };
+
+# Disclosure
+
+A button that shows and hides a region of content. It's a client component; this page is a Server Component that renders it directly.
+
+<div className="demo">
+  <Disclosure summary="What's inside?">Content revealed by the button.</Disclosure>
+</div>
+
+```tsx
+import { Disclosure } from "@flxra/ui";
+
+<Disclosure summary="What's inside?">Content revealed by the button.</Disclosure>
+```
+
+## Props
+
+- `summary`: the button label.
+- `children`: the content shown when open.
+- `defaultOpen`: start open. Defaults to `false`.
+- `className`: for placement only.
+
+The root, button and panel carry `data-state="open" | "closed"`.
