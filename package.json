@@ -13,7 +13,8 @@
     "build": "turbo run build",
     "dev": "turbo run dev dev:types --filter=docs...",
     "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "test:consumer": "node scripts/test-consumer.mjs"
   },
   "devDependencies": {
     "turbo": "2.11.10",

@@ -19,3 +19,11 @@ Run commands from the repo root. Add a dependency to one package with `npm insta
 - `packages/ui`: `@flxra/ui`, built with Vite library mode into `dist/`.
 - `apps/docs`: the docs site (Next.js), private, deployed to Vercel.
 - `examples/`: minimal Next and Vite apps that install the packed packages, from a temp folder outside the repo, the way a stranger would.
+
+## Testing the packages like a stranger would
+
+```sh
+npm run test:consumer
+```
+
+It builds and packs `@flxra/tokens` and `@flxra/ui`, lints the tarballs (publint, attw), then installs them into `examples/next-consumer` and `examples/vite-consumer`, each copied to a temp folder outside the repo. It checks types, production builds, the rendered HTML and CSS, Vite's dev server, and a plain-Node server render. On failure the temp folder is kept for debugging; its path is printed at the start.
