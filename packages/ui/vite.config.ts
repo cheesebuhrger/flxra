@@ -1,13 +1,22 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+// Class names come from the file's basename, so two CSS modules with the
+// same name in different folders would collide in styles.css.
+const cssModuleNames = new Map<string, string>();
+
 export default defineConfig({
   plugins: [react()],
   css: {
     modules: {
       // Stable, readable class names: Disclosure.module.css → .flxra-Disclosure-<class>
-      generateScopedName: (local, file) =>
-        `flxra-${file.split("/").pop()!.replace(/\.module\.css$/, "")}-${local}`,
+      generateScopedName: (local, file) => {
+        const name = file.split("/").pop()!.replace(/\.module\.css$/, "");
+        const seen = cssModuleNames.get(name);
+        if (seen && seen !== file) throw new Error(`Two CSS modules named ${name}: ${seen} and ${file}`);
+        cssModuleNames.set(name, file);
+        return `flxra-${name}-${local}`;
+      },
     },
   },
   build: {

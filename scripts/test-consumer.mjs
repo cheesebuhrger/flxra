@@ -2,7 +2,7 @@
 // temp dir outside the repo, and checks they work the way a stranger's app
 // would use them. Run from the repo root: npm run test:consumer
 import assert from "node:assert/strict";
-import { execFileSync, spawn } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -22,8 +22,13 @@ const tempBase = process.env.RUNNER_TEMP ?? tmpdir();
 const work = mkdtempSync(path.join(tempBase, "flxra-consumer-"));
 console.log(`Working in ${work}`);
 
-async function waitFor(url) {
+// Fails fast if the server exits (a crash, or the port already taken),
+// instead of passing against whatever else answers on that port.
+async function waitFor(url, server) {
+  let exited = false;
+  server.once("exit", () => (exited = true));
   for (let i = 0; i < 60; i++) {
+    if (exited) throw new Error(`Server for ${url} exited before responding`);
     try {
       const res = await fetch(url);
       if (res.ok) return res;
@@ -82,7 +87,7 @@ run("npx", ["-y", ATTW, tarballs[1], "--profile", "esm-only", "--exclude-entrypo
   const port = "3471";
   const server = startServer("npx", ["next", "start", "-p", port], dir);
   try {
-    const html = await (await waitFor(`http://localhost:${port}/`)).text();
+    const html = await (await waitFor(`http://localhost:${port}/`, server)).text();
     assert.match(html, /Close dialog/, "VisuallyHidden text in the HTML");
     assert.match(html, /flxra-VisuallyHidden-root/, "VisuallyHidden class in the HTML");
     assert.match(html, /flxra-Disclosure-trigger/, "Disclosure rendered on the server");
@@ -102,8 +107,10 @@ run("npx", ["-y", ATTW, tarballs[1], "--profile", "esm-only", "--exclude-entrypo
 {
   const dir = install("vite-consumer");
   run("npx", ["tsc", "--noEmit"], dir);
-  const out = execFileSync("npx", ["vite", "build"], { cwd: dir, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  const build = spawnSync("npx", ["vite", "build"], { cwd: dir, encoding: "utf8" });
+  const out = build.stdout + build.stderr; // warnings go to stderr
   process.stdout.write(out);
+  assert.equal(build.status, 0, "vite build succeeds");
   // Vite drops "use client" silently; any mention means its handling changed.
   assert.doesNotMatch(out, /use client|directive/i, "vite build mentions the directive");
   const assets = path.join(dir, "dist", "assets");
@@ -117,9 +124,15 @@ run("npx", ["-y", ATTW, tarballs[1], "--profile", "esm-only", "--exclude-entrypo
   const port = "3472";
   const server = startServer("npx", ["vite", "--port", port, "--strictPort"], dir);
   try {
-    await waitFor(`http://localhost:${port}/`);
+    await waitFor(`http://localhost:${port}/`, server);
     const res = await fetch(`http://localhost:${port}/src/main.tsx`);
     assert.equal(res.status, 200, "dev server transforms main.tsx");
+    // main.tsx imports @flxra/ui from Vite's pre-bundled deps; fetch that too.
+    const dep = (await res.text()).match(/"(\/node_modules\/\.vite\/deps\/@flxra_ui\.js[^"]*)"/)?.[1];
+    assert.ok(dep, "main.tsx imports the pre-bundled @flxra/ui");
+    const depRes = await fetch(`http://localhost:${port}${dep}`);
+    assert.equal(depRes.status, 200, "pre-bundled @flxra/ui loads");
+    assert.match(await depRes.text(), /flxra-Disclosure-trigger/, "pre-bundle includes the components");
   } finally {
     stop(server);
   }

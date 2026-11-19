@@ -284,3 +284,13 @@ What changed from the plan while building commits 1–6, each verified:
   - The Next example uses Next's default `skipLibCheck: true`: with `false`, Next's own `.d.ts` files fail. The Vite example keeps `false`, so Flxra's declarations are still strictly checked.
   - Negative test: removing `"use client"` from `Disclosure` fails the Next build with `useState is not a function`.
 - **Local tooling:** `/usr/local/bin/git` on this Mac is 2.15 (2017), and Changesets fails with it. `/usr/bin/git` (2.54) works. CI is unaffected.
+- **Code review fixes:**
+  - the Vite build check reads stderr too (warnings go there);
+  - the dev check fetches the pre-bundled `@flxra/ui`;
+  - a server that exits fails the test instead of letting another process answer on its port;
+  - the release workflow repeats CI's typecheck, build and consumer test before publishing;
+  - CI cancels superseded runs only on PRs, not on `main`;
+  - the build fails if two CSS modules share a filename (their class names would collide);
+  - the `dist` cleanup works on Windows;
+  - the `lint` task is removed until a linter exists, since it was a no-op. That replaces "lint" in the CI and verification steps above.
+  - Rejected after checking: "a minor release would jump to `1.0.0` through the peer dependency". The simulation above shows Changesets v3 with `fixed` produces `0.2.0` for both.

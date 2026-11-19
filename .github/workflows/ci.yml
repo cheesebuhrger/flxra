@@ -7,7 +7,7 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -27,7 +27,7 @@ jobs:
 
       - run: npm ci
 
-      - run: npx turbo run lint typecheck build
+      - run: npx turbo run typecheck build
 
       - name: Test the packed packages in Next and Vite apps
         run: npm run test:consumer

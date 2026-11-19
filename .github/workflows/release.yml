@@ -40,6 +40,10 @@ jobs:
 
       - run: npm ci
 
+      # The same gates as CI, so nothing unchecked reaches npm.
+      - run: npx turbo run typecheck build
+      - run: npm run test:consumer
+
       # Opens or updates the Version Packages PR while changesets are pending;
       # once that PR is merged, builds and publishes to npm.
       - uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
