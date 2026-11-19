@@ -1,0 +1,28 @@
+{
+  "name": "@flxra/tokens",
+  "version": "0.1.0",
+  "description": "Flxra design tokens as CSS custom properties.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cheesebuhrger/flxra.git",
+    "directory": "packages/tokens"
+  },
+  "homepage": "https://github.com/cheesebuhrger/flxra#readme",
+  "files": [
+    "tokens.css",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "exports": {
+    "./tokens.css": "./tokens.css",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "*.css"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

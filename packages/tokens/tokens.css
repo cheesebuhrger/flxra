@@ -1,0 +1,9 @@
+/*
+ * @flxra/tokens
+ * Design tokens as CSS custom properties, all prefixed --flxra-.
+ * Import once at the app root, before @flxra/ui/styles.css.
+ */
+
+:root {
+  --flxra-space-1: 4px;
+}
